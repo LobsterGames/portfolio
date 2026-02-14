@@ -1,0 +1,379 @@
+---
+date: '2016-11-05T18:25:22+05:30'
+draft: false
+image: img/portfolio/titanic.jpg
+showonlyimage: false
+title: Titanic Exploratory Data Analysis
+weight: 1
+---
+
+
+
+<p>Compared various variables to survival outcome for passengers aboard the Titanic by creating graphics in R</p>
+<ul>
+<li><a href="https://www.kaggle.com/jamesleslie/titanic-cleaned-data?select=train_clean.csv">dataset</a></li>
+</ul>
+<!--more-->
+<div id="exploratory-data-analysis-of-the-titanic-dataset" class="section level2">
+<h2>Exploratory Data Analysis of the Titanic Dataset</h2>
+<p>This is a cleaned version of the titanic (training) dataset <a href="https://www.kaggle.com/jamesleslie/titanic-cleaned-data?select=train_clean.csv">published on Kaggle</a>. Here is a quick statistical summary.</p>
+<pre><code>##       Age           Cabin             Embarked              Fare       
+##  Min.   : 0.42   Length:891         Length:891         Min.   :  0.00  
+##  1st Qu.:22.00   Class :character   Class :character   1st Qu.:  7.91  
+##  Median :30.00   Mode  :character   Mode  :character   Median : 14.45  
+##  Mean   :29.45                                         Mean   : 32.20  
+##  3rd Qu.:35.50                                         3rd Qu.: 31.00  
+##  Max.   :80.00                                         Max.   :512.33  
+##      Name               Parch         PassengerId        Pclass     
+##  Length:891         Min.   :0.0000   Min.   :  1.0   Min.   :1.000  
+##  Class :character   1st Qu.:0.0000   1st Qu.:223.5   1st Qu.:2.000  
+##  Mode  :character   Median :0.0000   Median :446.0   Median :3.000  
+##                     Mean   :0.3816   Mean   :446.0   Mean   :2.309  
+##                     3rd Qu.:0.0000   3rd Qu.:668.5   3rd Qu.:3.000  
+##                     Max.   :6.0000   Max.   :891.0   Max.   :3.000  
+##      Sex                SibSp          Survived         Ticket         
+##  Length:891         Min.   :0.000   Min.   :0.0000   Length:891        
+##  Class :character   1st Qu.:0.000   1st Qu.:0.0000   Class :character  
+##  Mode  :character   Median :0.000   Median :0.0000   Mode  :character  
+##                     Mean   :0.523   Mean   :0.3838                     
+##                     3rd Qu.:1.000   3rd Qu.:1.0000                     
+##                     Max.   :8.000   Max.   :1.0000                     
+##     Title            Family_Size     
+##  Length:891         Min.   : 0.0000  
+##  Class :character   1st Qu.: 0.0000  
+##  Mode  :character   Median : 0.0000  
+##                     Mean   : 0.9046  
+##                     3rd Qu.: 1.0000  
+##                     Max.   :10.0000</code></pre>
+<div id="single-variable-analysis" class="section level3">
+<h3>Single-Variable Analysis</h3>
+<ul>
+<li>Inspect all of the variable distributions</li>
+</ul>
+<pre class="r"><code>ggplot(titanic, aes(x = Age)) +
+  geom_histogram(binwidth = 5, boundary = 0, fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-1.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic$Deck &lt;- substr(titanic$Cabin, 1, 1)
+
+titanic_sub &lt;- filter(titanic, !is.na(Cabin))
+
+ggplot(titanic, aes(x = Deck)) +
+  geom_bar(fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-2.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(data = titanic) +
+  geom_bar(mapping = aes(x = Embarked), fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-3.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(data = titanic) +
+  geom_histogram(mapping = aes(x = Fare, y = after_stat(count / sum(count))), binwidth = 50, fill = &quot;cyan&quot;, color = &quot;black&quot;) +
+  labs(
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-4.png" alt="" width="672" /></p>
+<pre class="r"><code>Name_Length &lt;- nchar(titanic$Name)
+
+ggplot(data = titanic, aes(x = Name_Length)) +
+  geom_histogram(binwidth = 5, boundary = 0, fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-5.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic &lt;- titanic %&gt;%
+  mutate(
+    Parch = factor(
+      Parch, 
+      levels = 0:max(Parch)
+    )
+  )
+
+ggplot(titanic, aes(x = Parch)) +
+  geom_bar(fill = &quot;cyan&quot;, color = &quot;black&quot;) +
+  scale_x_discrete(drop = FALSE)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-6.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, aes(x = PassengerId)) +
+  geom_histogram(bins = 8, fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-7.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, aes(x = Pclass)) +
+  geom_bar(fill = &quot;cyan&quot;, color = &quot;black&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-8.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, aes(x = Sex)) +
+  geom_bar(color = &quot;black&quot;, fill = &quot;cyan&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-9.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic &lt;- titanic %&gt;% 
+  mutate(
+    SibSp = factor(
+      SibSp, 
+      levels = 0:max(SibSp)
+    )
+  )
+
+ggplot(titanic, aes(x = SibSp)) +
+  geom_bar(color = &quot;black&quot;, fill = &quot;cyan&quot;) +
+  scale_x_discrete(drop = FALSE)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-10.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, aes(x = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(color = &quot;black&quot;, fill = &quot;cyan&quot;) +
+  labs(
+    x = &quot;Survival Outcome&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-11.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic$subTicket &lt;- substr(titanic$Ticket,1, 1)
+
+
+x &lt;- 1
+
+for(i in 1:891){
+  if (is.na(as.integer(titanic$subTicket[x])) == FALSE){
+    titanic$subTicket[x] &lt;- &quot;Numeric&quot;
+  }
+  x &lt;- x + 1
+}
+
+ggplot(titanic, aes(x = subTicket)) +
+  geom_bar(color = &quot;black&quot;, fill = &quot;cyan&quot;) +
+  scale_x_discrete(limits = c(&quot;A&quot;,&quot;C&quot;,&quot;F&quot;,&quot;L&quot;,&quot;P&quot;,&quot;S&quot;,&quot;W&quot;,&quot;Numeric&quot;)) +
+  labs(
+    x = &quot;First Letter on Ticket&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-12.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, aes(x = Title)) +
+  geom_bar(color = &quot;black&quot;, fill = &quot;cyan&quot;)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-13.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic &lt;- titanic %&gt;%
+  mutate(
+    Family_Size = factor(
+      Family_Size,
+      levels = 0:max(Family_Size)
+    )
+  )
+
+ggplot(data = titanic) +
+  geom_bar(mapping = aes(x = Family_Size), fill = &quot;cyan&quot;, color = &quot;black&quot;) +
+  scale_x_discrete(drop = FALSE)</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-1-14.png" alt="" width="672" /></p>
+</div>
+<div id="multi-variable-analysis" class="section level3">
+<h3>Multi-Variable Analysis</h3>
+<ul>
+<li>Compare variables to the value of interest (<strong>Survived</strong>)</li>
+</ul>
+<pre class="r"><code>ggplot(titanic, 
+       aes(x = factor(Survived, labels = c(&quot;Did not survive&quot;, &quot;Survived&quot;)),
+        y = Age)) +
+  geom_boxplot() +
+  labs(
+    title = &quot;Age Distribution by Survival Status&quot;,
+    x = &quot;Survival Outcome&quot;,
+    y = &quot;Age&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-1.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic_sub,
+       aes(x = Deck,
+           fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Known Cabin Deck Distribution by Survival Status&quot;,
+    fill = &quot;Survival Status&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-2.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic$Embarked[titanic$Embarked == &quot;C&quot;] &lt;- &quot;Cherbourg, France&quot;
+titanic$Embarked[titanic$Embarked == &quot;S&quot;] &lt;- &quot;Southampton, England&quot;
+titanic$Embarked[titanic$Embarked == &quot;Q&quot;] &lt;- &quot;Belfast, Ireland&quot;
+
+ggplot(titanic,
+       aes(x = Embarked,
+           fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Location of Embarkment Distribution by Survival Status&quot;,
+    fill = &quot;Survival Status&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-3.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, 
+       aes(x = factor(Survived, labels = c(&quot;Did not survive&quot;, &quot;Survived&quot;)),
+        y = Fare)) +
+  geom_boxplot() +
+  labs(
+    title = &quot;Fare Distribution by Survival Status&quot;,
+    x = &quot;Survival Outcome&quot;,
+    y = &quot;Fare&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-4.png" alt="" width="672" /></p>
+<pre class="r"><code>Name_Length &lt;- nchar(titanic$Name)
+
+ggplot(titanic, 
+       aes(x = factor(Survived, labels = c(&quot;Did not survive&quot;, &quot;Survived&quot;)),
+        y = Name_Length)) +
+  geom_boxplot() +
+  labs(
+    title = &quot;Length of Full Name Distribution by Survival Status&quot;,
+    x = &quot;Survival Outcome&quot;,
+    y = &quot;Full Name Length&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-5.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = Parch,
+           fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Parch Distribution by Survival Status&quot;,
+    fill = &quot;Survival Status&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-6.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic, 
+       aes(x = factor(Survived, labels = c(&quot;Did not survive&quot;, &quot;Survived&quot;)),
+        y = PassengerId)) +
+  geom_boxplot() +
+  labs(
+    title = &quot;Passenger ID Distribution by Survival Status&quot;,
+    x = &quot;Survival Outcome&quot;,
+    y = &quot;Passenger ID&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-7.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = Pclass, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) + 
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Passenger Class Distribution by Survival Status&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    x = &quot;Passenger Class&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-8.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = Sex, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Gender Distrubtion by Survival Status&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    x = &quot;Gender&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-9.png" alt="" width="672" /></p>
+<pre class="r"><code>givenFemaleSurvivalRate &lt;- nrow(filter(titanic, Sex == &quot;female&quot;, Survived == 1)) / nrow(filter(titanic, Sex == &quot;female&quot;))
+
+givenFemaleSurvivalRate</code></pre>
+<pre><code>## [1] 0.7420382</code></pre>
+<pre class="r"><code>givenMaleSurvivalRate &lt;- nrow(filter(titanic, Sex == &quot;male&quot;, Survived == 1)) / nrow(filter(titanic, Sex == &quot;male&quot;))
+
+givenMaleSurvivalRate</code></pre>
+<pre><code>## [1] 0.1889081</code></pre>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = SibSp, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;SibSp Distribution by Survival Outcome&quot;,
+    x = &quot;Number of Siblings and Spouses Aboard Titanic&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-2-10.png" alt="" width="672" /></p>
+<pre class="r"><code>titanic$subTicket &lt;- substr(titanic$Ticket,1, 1)
+
+
+x &lt;- 1
+
+for(i in 1:891){
+  if (is.na(as.integer(titanic$subTicket[x])) == FALSE){
+    titanic$subTicket[x] &lt;- &quot;Numeric&quot;
+  }
+  x &lt;- x + 1
+}
+
+ggplot(titanic, 
+       aes(x = subTicket, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_x_discrete(limits = c(&quot;A&quot;, &quot;C&quot;, &quot;F&quot;, &quot;P&quot;, &quot;W&quot;, &quot;Numeric&quot;)) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;First Letter on Ticket Distribution by Survival Outcome&quot;,
+    x = &quot;First Letter on Ticket&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-3-1.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = Title, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+  labs(
+    title = &quot;Passenger Title Distribution by Survival Outcome&quot;,
+    x = &quot;Title&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-4-1.png" alt="" width="672" /></p>
+<pre class="r"><code>ggplot(titanic,
+       aes(x = Family_Size, fill = factor(Survived, labels = c(&quot;Didn&#39;t Survive&quot;, &quot;Survived&quot;)))) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(
+    values = c(&quot;Didn&#39;t Survive&quot; = &quot;firebrick&quot;,
+               &quot;Survived&quot; = &quot;seagreen&quot;)
+  ) +
+   scale_x_discrete(drop = FALSE) +
+  labs(
+    title = &quot;Family Size Distribution by Survival Outcome&quot;,
+    x = &quot;Family Size&quot;,
+    fill = &quot;Survival Outcome&quot;,
+    y = &quot;Proportion&quot;
+  )</code></pre>
+<p><img src="/portfolio/TitanicEDA_files/figure-html/unnamed-chunk-4-2.png" alt="" width="672" /></p>
+</div>
+<div id="summary" class="section level3">
+<h3>Summary</h3>
+<ol style="list-style-type: decimal">
+<li>Passenger gender is the variable that had the most significant impact on survival outcome.</li>
+</ol>
+<pre class="r"><code>  #male survival rate
+  nrow(filter(titanic, Sex == &quot;male&quot; &amp; Survived == 1)) / nrow(filter(titanic, Sex == &quot;male&quot;))</code></pre>
+<pre><code>## [1] 0.1889081</code></pre>
+<pre class="r"><code>  #female survival rate
+  nrow(filter(titanic, Sex == &quot;female&quot; &amp; Survived == 1)) / nrow(filter(titanic, Sex == &quot;female&quot;))</code></pre>
+<pre><code>## [1] 0.7420382</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Someone paid over £500 for their fare price.</li>
+</ol>
+<pre class="r"><code>  max(titanic$Fare)</code></pre>
+<pre><code>## [1] 512.3292</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li><p>The first letter on tickets led to varying survival proportions, which means they were likely determined by something like role on the titanic or cabin rather than being purely random.</p></li>
+<li><p>Out of the seven passengers with the title “Dr”, only 3 survived.</p></li>
+</ol>
+<pre class="r"><code>  nrow(filter(titanic, (Title == &quot;Dr&quot; | Title == &quot;Rev&quot;) &amp; Survived == 1))</code></pre>
+<pre><code>## [1] 3</code></pre>
+<pre class="r"><code>  nrow(filter(titanic, Title == &quot;Dr&quot;))</code></pre>
+<pre><code>## [1] 7</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>Passenger Id does not seem to have much of an effect on survival outcome.</li>
+</ol>
+</div>
+</div>

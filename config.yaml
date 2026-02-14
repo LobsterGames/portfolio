@@ -1,0 +1,28 @@
+baseurl: https://lobstergames.github.io/
+title: Evan Welch Data Science Portfolio
+theme: hugo-creative-portfolio-theme
+languageCode: en-us
+disqusShortname: ''
+googleAnalytics: ''
+publishDir: "../LobsterGames.github.io"
+params:
+  copyright: '&copy;2026 Evan J. Welch'
+  description: My projects
+  email: you@yoursite.com
+  navlinks:
+    - home: true
+      name: Home
+      url: portfolio/
+    - name: About
+      url: about/
+    - name: Articles
+      url: post/
+  sidebarAbout:
+    - I am a student intersted in cs, data science, and ml
+    - My projects are located on the home page; click on a tile for more information
+    - Additonal attachments / links can be found on the bottom of the project tiles
+    - Originally from San Diego
+  social:
+    github: https://github.com/LobsterGames
+    linkedin: https://www.linkedin.com/in/evan-welch-78200335a/
+  style: blue

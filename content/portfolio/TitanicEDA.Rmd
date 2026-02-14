@@ -1,0 +1,381 @@
+---
+date: '2016-11-05T18:25:22+05:30'
+draft: false
+image: img/portfolio/titanic.jpg
+showonlyimage: false
+title: Titanic Exploratory Data Analysis
+weight: 1
+---
+
+Compared various variables to survival outcome for passengers aboard the Titanic by creating graphics in R
+
+- [dataset](https://www.kaggle.com/jamesleslie/titanic-cleaned-data?select=train_clean.csv)
+
+<!--more-->
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(treemapify)
+setwd("~/Faber DS and ML/R/data")
+titanic <- read_xlsx("titanic_raw_data.xlsx")
+
+
+
+```
+
+## Exploratory Data Analysis of the Titanic Dataset
+
+This is a cleaned version of the titanic (training) dataset [published on Kaggle](https://www.kaggle.com/jamesleslie/titanic-cleaned-data?select=train_clean.csv). Here is a quick statistical summary.
+
+
+
+```{r summary, echo = FALSE}
+summary(titanic)
+```
+
+### Single-Variable Analysis
+
+* Inspect all of the variable distributions
+
+```{r, warning = FALSE}
+ggplot(titanic, aes(x = Age)) +
+  geom_histogram(binwidth = 5, boundary = 0, fill = "cyan", color = "black")
+
+titanic$Deck <- substr(titanic$Cabin, 1, 1)
+
+titanic_sub <- filter(titanic, !is.na(Cabin))
+
+ggplot(titanic, aes(x = Deck)) +
+  geom_bar(fill = "cyan", color = "black")
+
+ggplot(data = titanic) +
+  geom_bar(mapping = aes(x = Embarked), fill = "cyan", color = "black")
+
+ggplot(data = titanic) +
+  geom_histogram(mapping = aes(x = Fare, y = after_stat(count / sum(count))), binwidth = 50, fill = "cyan", color = "black") +
+  labs(
+    y = "Proportion"
+  )
+
+Name_Length <- nchar(titanic$Name)
+
+ggplot(data = titanic, aes(x = Name_Length)) +
+  geom_histogram(binwidth = 5, boundary = 0, fill = "cyan", color = "black")
+
+titanic <- titanic %>%
+  mutate(
+    Parch = factor(
+      Parch, 
+      levels = 0:max(Parch)
+    )
+  )
+
+ggplot(titanic, aes(x = Parch)) +
+  geom_bar(fill = "cyan", color = "black") +
+  scale_x_discrete(drop = FALSE)
+
+ggplot(titanic, aes(x = PassengerId)) +
+  geom_histogram(bins = 8, fill = "cyan", color = "black")
+
+ggplot(titanic, aes(x = Pclass)) +
+  geom_bar(fill = "cyan", color = "black")
+
+ggplot(titanic, aes(x = Sex)) +
+  geom_bar(color = "black", fill = "cyan")
+
+titanic <- titanic %>% 
+  mutate(
+    SibSp = factor(
+      SibSp, 
+      levels = 0:max(SibSp)
+    )
+  )
+
+ggplot(titanic, aes(x = SibSp)) +
+  geom_bar(color = "black", fill = "cyan") +
+  scale_x_discrete(drop = FALSE)
+
+ggplot(titanic, aes(x = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(color = "black", fill = "cyan") +
+  labs(
+    x = "Survival Outcome"
+  )
+  
+titanic$subTicket <- substr(titanic$Ticket,1, 1)
+
+
+x <- 1
+
+for(i in 1:891){
+  if (is.na(as.integer(titanic$subTicket[x])) == FALSE){
+    titanic$subTicket[x] <- "Numeric"
+  }
+  x <- x + 1
+}
+
+ggplot(titanic, aes(x = subTicket)) +
+  geom_bar(color = "black", fill = "cyan") +
+  scale_x_discrete(limits = c("A","C","F","L","P","S","W","Numeric")) +
+  labs(
+    x = "First Letter on Ticket"
+  )
+
+ggplot(titanic, aes(x = Title)) +
+  geom_bar(color = "black", fill = "cyan")
+
+titanic <- titanic %>%
+  mutate(
+    Family_Size = factor(
+      Family_Size,
+      levels = 0:max(Family_Size)
+    )
+  )
+
+ggplot(data = titanic) +
+  geom_bar(mapping = aes(x = Family_Size), fill = "cyan", color = "black") +
+  scale_x_discrete(drop = FALSE)
+
+```
+
+### Multi-Variable Analysis
+
+* Compare variables to the value of interest (**Survived**)
+
+```{r}
+
+
+ggplot(titanic, 
+       aes(x = factor(Survived, labels = c("Did not survive", "Survived")),
+        y = Age)) +
+  geom_boxplot() +
+  labs(
+    title = "Age Distribution by Survival Status",
+    x = "Survival Outcome",
+    y = "Age"
+  )
+
+
+
+ggplot(titanic_sub,
+       aes(x = Deck,
+           fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Known Cabin Deck Distribution by Survival Status",
+    fill = "Survival Status",
+    y = "Proportion"
+  )
+
+titanic$Embarked[titanic$Embarked == "C"] <- "Cherbourg, France"
+titanic$Embarked[titanic$Embarked == "S"] <- "Southampton, England"
+titanic$Embarked[titanic$Embarked == "Q"] <- "Belfast, Ireland"
+
+ggplot(titanic,
+       aes(x = Embarked,
+           fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Location of Embarkment Distribution by Survival Status",
+    fill = "Survival Status",
+    y = "Proportion"
+  )
+
+ggplot(titanic, 
+       aes(x = factor(Survived, labels = c("Did not survive", "Survived")),
+        y = Fare)) +
+  geom_boxplot() +
+  labs(
+    title = "Fare Distribution by Survival Status",
+    x = "Survival Outcome",
+    y = "Fare"
+  )
+
+Name_Length <- nchar(titanic$Name)
+
+ggplot(titanic, 
+       aes(x = factor(Survived, labels = c("Did not survive", "Survived")),
+        y = Name_Length)) +
+  geom_boxplot() +
+  labs(
+    title = "Length of Full Name Distribution by Survival Status",
+    x = "Survival Outcome",
+    y = "Full Name Length"
+  )
+
+ggplot(titanic,
+       aes(x = Parch,
+           fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Parch Distribution by Survival Status",
+    fill = "Survival Status",
+    y = "Proportion"
+  )
+
+ggplot(titanic, 
+       aes(x = factor(Survived, labels = c("Did not survive", "Survived")),
+        y = PassengerId)) +
+  geom_boxplot() +
+  labs(
+    title = "Passenger ID Distribution by Survival Status",
+    x = "Survival Outcome",
+    y = "Passenger ID"
+  )
+
+ggplot(titanic,
+       aes(x = Pclass, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") + 
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Passenger Class Distribution by Survival Status",
+    fill = "Survival Outcome",
+    x = "Passenger Class",
+    y = "Proportion"
+  )
+
+ggplot(titanic,
+       aes(x = Sex, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Gender Distrubtion by Survival Status",
+    fill = "Survival Outcome",
+    x = "Gender",
+    y = "Proportion"
+  )
+
+
+
+givenFemaleSurvivalRate <- nrow(filter(titanic, Sex == "female", Survived == 1)) / nrow(filter(titanic, Sex == "female"))
+
+givenFemaleSurvivalRate
+
+givenMaleSurvivalRate <- nrow(filter(titanic, Sex == "male", Survived == 1)) / nrow(filter(titanic, Sex == "male"))
+
+givenMaleSurvivalRate
+
+ggplot(titanic,
+       aes(x = SibSp, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "SibSp Distribution by Survival Outcome",
+    x = "Number of Siblings and Spouses Aboard Titanic",
+    fill = "Survival Outcome",
+    y = "Proportion"
+  )
+
+
+
+
+
+```
+```{r, warning = FALSE}
+
+
+titanic$subTicket <- substr(titanic$Ticket,1, 1)
+
+
+x <- 1
+
+for(i in 1:891){
+  if (is.na(as.integer(titanic$subTicket[x])) == FALSE){
+    titanic$subTicket[x] <- "Numeric"
+  }
+  x <- x + 1
+}
+
+ggplot(titanic, 
+       aes(x = subTicket, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_x_discrete(limits = c("A", "C", "F", "P", "W", "Numeric")) +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "First Letter on Ticket Distribution by Survival Outcome",
+    x = "First Letter on Ticket",
+    fill = "Survival Outcome",
+    y = "Proportion"
+  )
+```
+```{r}
+ggplot(titanic,
+       aes(x = Title, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+  labs(
+    title = "Passenger Title Distribution by Survival Outcome",
+    x = "Title",
+    fill = "Survival Outcome",
+    y = "Proportion"
+  )
+
+ggplot(titanic,
+       aes(x = Family_Size, fill = factor(Survived, labels = c("Didn't Survive", "Survived")))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(
+    values = c("Didn't Survive" = "firebrick",
+               "Survived" = "seagreen")
+  ) +
+   scale_x_discrete(drop = FALSE) +
+  labs(
+    title = "Family Size Distribution by Survival Outcome",
+    x = "Family Size",
+    fill = "Survival Outcome",
+    y = "Proportion"
+  )
+```
+
+### Summary
+
+1. Passenger gender is the variable that had the most significant impact on survival outcome.
+```{r}
+  #male survival rate
+  nrow(filter(titanic, Sex == "male" & Survived == 1)) / nrow(filter(titanic, Sex == "male"))
+  
+  #female survival rate
+  nrow(filter(titanic, Sex == "female" & Survived == 1)) / nrow(filter(titanic, Sex == "female"))
+```
+
+2. Someone paid over £500 for their fare price.
+```{r}
+  max(titanic$Fare)
+```
+
+3. The first letter on tickets led to varying survival proportions, which means they were likely determined by something like role on the titanic or cabin rather than being purely random.
+
+4. Out of the seven passengers with the title "Dr", only 3 survived.
+```{R}
+  nrow(filter(titanic, (Title == "Dr" | Title == "Rev") & Survived == 1))
+  nrow(filter(titanic, Title == "Dr"))
+```
+
+5. Passenger Id does not seem to have much of an effect on survival outcome.
+
